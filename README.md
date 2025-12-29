@@ -16,8 +16,6 @@
 # 在线使用
 https://jeffreyforest.github.io/imgecho
 
-# 本地运行
-python -m http.server 8000
 ```
 
 ## 技术栈
@@ -26,6 +24,3 @@ python -m http.server 8000
 - 纯前端实现，无需后端
 - 响应式设计
 
-## 许可证
-
-MIT License
