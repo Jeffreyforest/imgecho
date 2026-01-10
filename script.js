@@ -48,7 +48,7 @@ function setupEventListeners() {
     });
     
     // 所有输入字段的实时刷新事件
-    const inputFields = ['camera', 'lens', 'location', 'iso', 'aperture', 'shutter', 'notes', 'copyright', 'font-family', 'font-weight', 'font-position', 'display-mode'];
+    const inputFields = ['camera', 'lens', 'location', 'iso', 'aperture', 'shutter', 'notes', 'copyright', 'font-family', 'font-weight', 'font-size', 'font-position', 'display-mode'];
     inputFields.forEach(id => {
         const element = document.getElementById(id);
         if (element) {
