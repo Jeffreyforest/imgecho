@@ -139,11 +139,21 @@ export class ImageProcessor {
             
             // 应用模糊效果
             const blurValue = parseFloat(document.getElementById('blur-slider').value);
-            this.ctx.filter = `blur(${blurValue * 2}px)`;
+            // 兼容Safari浏览器的模糊效果
+            if (this.ctx.filter === undefined) {
+                // 旧版浏览器不支持filter属性，使用CSS滤镜
+                this.canvas.style.filter = `blur(${blurValue * 2}px)`;
+            } else {
+                this.ctx.filter = `blur(${blurValue * 2}px)`;
+            }
             this.ctx.drawImage(img, 0, 0, this.canvas.width, this.canvas.height);
             
             // 重置所有滤镜和样式，确保文字清晰
-            this.ctx.filter = 'none';
+            if (this.ctx.filter !== undefined) {
+                this.ctx.filter = 'none';
+            } else {
+                this.canvas.style.filter = 'none';
+            }
             this.ctx.globalAlpha = 1;
             this.ctx.shadowBlur = 0;
             this.ctx.save();

@@ -29,8 +29,18 @@ export class ExifParser {
             const reader = new FileReader();
             reader.onload = (e) => {
                 const img = new Image();
+                // 设置跨域属性，避免Canvas污染
+                img.crossOrigin = 'anonymous';
                 img.onload = () => {
                     try {
+                        // 确保EXIF库已加载
+                        if (typeof EXIF === 'undefined') {
+                            console.error('EXIF库未加载');
+                            resolve({});
+                            return;
+                        }
+                        
+                        // 尝试使用不同的方式读取EXIF数据
                         EXIF.getData(img, function() {
                             const exifData = this;
                             console.log('EXIF数据对象:', exifData);
@@ -46,8 +56,16 @@ export class ExifParser {
                         }.bind(this));
                     } catch (error) {
                         console.error('EXIF解析失败:', error);
-                        // EXIF解析失败不影响图片显示，返回空元数据
-                        resolve({});
+                        // 尝试使用另一种方式读取EXIF数据
+                        try {
+                            const metadata = EXIF.readFromBinaryFile(new Uint8Array(e.target.result));
+                            console.log('二进制方式读取的EXIF数据:', metadata);
+                            resolve(metadata);
+                        } catch (binaryError) {
+                            console.error('二进制方式读取EXIF失败:', binaryError);
+                            // EXIF解析失败不影响图片显示，返回空元数据
+                            resolve({});
+                        }
                     }
                 };
                 img.onerror = (error) => {
