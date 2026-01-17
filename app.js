@@ -60,11 +60,26 @@ export class ImgEchoApp {
         blurSlider.addEventListener('change', this.handleBlurChange.bind(this));
         
         // 字体大小滑块事件
-        document.getElementById('font-size').addEventListener('input', (e) => {
-            const fontSizePercent = parseFloat(e.target.value);
-            document.getElementById('font-size-value').textContent = fontSizePercent.toFixed(1);
-            this.scheduleRefresh();
-        });
+        const fontSizeSlider = document.getElementById('font-size');
+        const fontSizeValue = document.getElementById('font-size-value');
+        if (fontSizeSlider && fontSizeValue) {
+            fontSizeSlider.addEventListener('input', (e) => {
+                const fontSizePercent = parseFloat(e.target.value);
+                fontSizeValue.textContent = fontSizePercent.toFixed(1);
+                
+                // 强制重新渲染整个画布内容
+                if (this.imageProcessor.getOriginalImage()) {
+                    // 先清除画布
+                    const ctx = this.imageProcessor.getContext();
+                    const canvas = this.imageProcessor.getCanvas();
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // 重新绘制图片和元数据
+                    this.imageProcessor.displayImageOnCanvas(this.imageProcessor.getOriginalImage());
+                    this.refreshCanvas();
+                }
+            });
+        }
         
         // 所有输入字段的实时刷新事件
         const inputFields = ['camera', 'lens', 'location', 'iso', 'aperture', 'shutter', 'notes', 'copyright', 'font-family', 'font-weight', 'font-position', 'display-mode'];
@@ -113,18 +128,23 @@ export class ImgEchoApp {
         const file = e.target.files[0];
         if (!file) return;
         
-        // 处理文件上传
+        console.log('开始处理上传的文件:', file.name);
+        
+        // 处理文件上传 - 这里会直接显示图片
         this.imageProcessor.handleFileUpload(file);
         
+        // 刷新画布，确保图片显示
+        this.scheduleRefresh();
+        
+        // 读取EXIF数据（可选，失败不影响图片显示）
         try {
-            // 读取EXIF数据
             const metadata = await ExifParser.readExifData(file);
-            // 填充到表单
             ExifParser.fillMetadataToForm(metadata);
-            // 刷新画布
             this.scheduleRefresh();
+            console.log('EXIF数据读取成功');
         } catch (error) {
             console.error('EXIF读取失败:', error);
+            // 继续执行，不影响图片显示
         }
     }
 
@@ -146,6 +166,13 @@ export class ImgEchoApp {
         this.imageProcessor.scheduleRefresh(() => {
             this.refreshCanvas();
         });
+    }
+    
+    /**
+     * 获取应用实例
+     */
+    getInstance() {
+        return this;
     }
 
     /**
@@ -176,4 +203,12 @@ const app = new ImgEchoApp();
 // 页面加载时初始化应用
 window.addEventListener('load', () => {
     app.initialize();
+    
+    // 暴露scheduleRefresh函数到全局作用域，以便语言管理器可以调用它
+    window.scheduleRefresh = () => {
+        app.scheduleRefresh();
+    };
 });
+
+// 暴露应用实例到全局作用域
+window.imgEchoApp = app;

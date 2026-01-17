@@ -63,16 +63,39 @@ export class ImageProcessor {
      * @param {File} file - 上传的文件
      */
     handleFileUpload(file) {
+        console.log('开始处理文件上传:', file.name, file.type, file.size);
+        
+        if (!file.type.startsWith('image/')) {
+            alert('请选择图片文件！');
+            return;
+        }
+        
         const reader = new FileReader();
         reader.onload = (event) => {
+            console.log('文件读取成功，开始加载图片');
             this.currentImage = event.target.result;
             const img = new Image();
+            // 设置跨域属性，避免Canvas污染
+            img.crossOrigin = 'anonymous';
             img.onload = () => {
+                console.log('图片加载成功，尺寸:', img.naturalWidth, 'x', img.naturalHeight);
                 this.originalImage = img;
                 this.displayImageOnCanvas(img);
                 this.updateCanvasContainer(true);
+                console.log('图片显示完成');
+            };
+            img.onerror = (error) => {
+                console.error('图片加载失败:', error);
+                alert('图片加载失败，请重试！');
             };
             img.src = this.currentImage;
+        };
+        reader.onerror = (error) => {
+            console.error('文件读取失败:', error);
+            alert('文件读取失败，请重试！');
+        };
+        reader.onloadstart = () => {
+            console.log('开始读取文件...');
         };
         reader.readAsDataURL(file);
     }
@@ -95,6 +118,8 @@ export class ImageProcessor {
      * @param {Image} img - 要显示的图片对象
      */
     displayImageOnCanvas(img) {
+        console.log('开始显示图片:', img);
+        
         // 设置canvas尺寸为图片原始尺寸
         this.canvas.width = img.naturalWidth;
         this.canvas.height = img.naturalHeight;
@@ -108,19 +133,26 @@ export class ImageProcessor {
         this.canvas.style.width = `${this.canvas.width * scale}px`;
         this.canvas.style.height = `${this.canvas.height * scale}px`;
         
-        // 绘制图片
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        
-        // 应用模糊效果
-        const blurValue = parseFloat(document.getElementById('blur-slider').value);
-        this.ctx.filter = `blur(${blurValue * 2}px)`;
-        this.ctx.drawImage(img, 0, 0, this.canvas.width, this.canvas.height);
-        
-        // 重置所有滤镜和样式，确保文字清晰
-        this.ctx.filter = 'none';
-        this.ctx.globalAlpha = 1;
-        this.ctx.shadowBlur = 0;
-        this.ctx.save();
+        try {
+            // 清除画布
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            
+            // 应用模糊效果
+            const blurValue = parseFloat(document.getElementById('blur-slider').value);
+            this.ctx.filter = `blur(${blurValue * 2}px)`;
+            this.ctx.drawImage(img, 0, 0, this.canvas.width, this.canvas.height);
+            
+            // 重置所有滤镜和样式，确保文字清晰
+            this.ctx.filter = 'none';
+            this.ctx.globalAlpha = 1;
+            this.ctx.shadowBlur = 0;
+            this.ctx.save();
+            
+            console.log('图片显示成功');
+        } catch (error) {
+            console.error('图片绘制失败:', error);
+            alert('图片绘制失败，请重试！');
+        }
     }
 
     /**

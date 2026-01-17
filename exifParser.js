@@ -20,23 +20,49 @@ export class ExifParser {
             // 检查EXIF库是否可用
             if (typeof EXIF === 'undefined') {
                 console.error('EXIF库未正确加载！');
-                reject(new Error('EXIF库加载失败，请检查网络连接或刷新页面'));
+                // EXIF库加载失败不影响图片显示，返回空元数据
+                resolve({});
                 return;
             }
             
-            EXIF.getData(file, function() {
-                const exifData = this;
-                console.log('EXIF数据对象:', exifData);
-                
-                // 调试：打印所有可用的EXIF标签
-                console.log('所有EXIF标签:', Object.keys(exifData.exifdata || {}));
-                
-                // 提取常用EXIF信息
-                const metadata = this.parseExifData(exifData);
-                console.log('解析后的EXIF数据:', metadata);
-                
-                resolve(metadata);
-            }.bind(this));
+            // 使用FileReader读取文件
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    try {
+                        EXIF.getData(img, function() {
+                            const exifData = this;
+                            console.log('EXIF数据对象:', exifData);
+                            
+                            // 调试：打印所有可用的EXIF标签
+                            console.log('所有EXIF标签:', Object.keys(exifData.exifdata || {}));
+                            
+                            // 提取常用EXIF信息
+                            const metadata = ExifParser.parseExifData(exifData);
+                            console.log('解析后的EXIF数据:', metadata);
+                            
+                            resolve(metadata);
+                        }.bind(this));
+                    } catch (error) {
+                        console.error('EXIF解析失败:', error);
+                        // EXIF解析失败不影响图片显示，返回空元数据
+                        resolve({});
+                    }
+                };
+                img.onerror = (error) => {
+                    console.error('EXIF读取时图片加载失败:', error);
+                    // 图片加载失败不影响主流程，返回空元数据
+                    resolve({});
+                };
+                img.src = e.target.result;
+            };
+            reader.onerror = (error) => {
+                console.error('EXIF读取时文件读取失败:', error);
+                // 文件读取失败不影响图片显示，返回空元数据
+                resolve({});
+            };
+            reader.readAsDataURL(file);
         });
     }
 

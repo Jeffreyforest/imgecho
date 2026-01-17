@@ -38,8 +38,11 @@ export class MetadataRenderer {
         // 设置文字样式
         const fontStyle = `${fontWeight} ${fontSize}px ${fontFamily}`;
         ctx.font = fontStyle;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'middle';
+        
+        // 根据位置设置文本对齐方式
+        const fontPosition = document.getElementById('font-position').value;
+        ctx.textAlign = fontPosition === 'center' ? 'center' : (fontPosition.includes('right') ? 'right' : 'left');
+        ctx.textBaseline = fontPosition.includes('bottom') ? 'bottom' : 'top';
         
         // 设置阴影效果
         ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';

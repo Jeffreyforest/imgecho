@@ -203,8 +203,8 @@ class LanguageManager {
         this.updateSectionTitles();
         
         // 触发刷新以更新画布上的文字
-        if (typeof scheduleRefresh === 'function') {
-            scheduleRefresh();
+        if (typeof window.scheduleRefresh === 'function') {
+            window.scheduleRefresh();
         }
     }
     

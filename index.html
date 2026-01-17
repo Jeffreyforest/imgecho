@@ -56,6 +56,7 @@
                 <section class="controls">
                     <div class="control-row">
                         <div class="control-group">
+                            <!-- 使用正确的label关联，确保点击文字也能触发文件选择 -->
                             <label for="file-input" class="file-label">
                                 <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -64,7 +65,7 @@
                                 </svg>
                                 上传图片
                             </label>
-                            <input type="file" id="file-input" accept="image/*" class="file-input">
+                            <input type="file" id="file-input" accept="image/*" class="file-input" aria-label="选择图片文件">
                         </div>
                         
                         <div class="control-group">
